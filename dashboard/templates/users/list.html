@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Users{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Users</h1>
+    {% if user.has_role('ADMIN') or user.has_role('REPORT_ADMIN') %}
+    <a href="{{ url_for('users.create_new_user') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Create New User
+    </a>
+    {% endif %}
+</div>
+
+{% if users %}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.first_name }} {{ u.last_name }}</td>
+                <td>
+                    {% if u.is_locked %}
+                    <span class="badge bg-danger">Locked</span>
+                    {% elif not u.is_active %}
+                    <span class="badge bg-secondary">Inactive</span>
+                    {% else %}
+                    <span class="badge bg-success">Active</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('users.view_user', username=u.username) }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                    {% if (user.has_role('ADMIN') or user.has_role('REPORT_ADMIN')) and u.username != user.username %}
+                    <a href="{{ url_for('users.reset_user_password', username=u.username) }}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-key"></i> Reset Password
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> No users found.
+</div>
+{% endif %}
+{% endblock %}

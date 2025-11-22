@@ -1,0 +1,42 @@
+# Airflow
+airflow_home/airflow.db
+airflow_home/airflow.db-shm
+airflow_home/airflow.db-wal
+airflow_home/logs/
+airflow_home/airflow-webserver.pid
+
+# UV lock files
+uv.lock
+
+# Temp files
+tmp/
+*.tmp
+
+# Log Files
+*.log
+logs/
+*.out
+*.err
+*.trace
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# PyCharm settings
+.idea/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+.eggs/
+*.egg-info/
+.installed.cfg

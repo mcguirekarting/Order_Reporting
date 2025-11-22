@@ -1,0 +1,21 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "apache-airflow==2.7.2",
+    "bcrypt>=5.0.0",
+    "flask>=2.2.5",
+    "flask-login>=0.6.3",
+    "flask-wtf>=1.2.2",
+    "matplotlib>=3.10.7",
+    "oracledb>=3.4.1",
+    "pandas>=2.3.3",
+    "pendulum<3.0.0",
+    "psycopg2-binary>=2.9.11",
+    "pymongo>=4.15.4",
+    "reportlab>=4.4.5",
+    "requests>=2.32.5",
+    "werkzeug>=3.1.3",
+]

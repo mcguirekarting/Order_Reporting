@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Welcome, {{ user.username }}!</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-file-earmark-text"></i> Reports</h5>
+                <p class="card-text">Manage report configurations, create new reports, and view existing ones.</p>
+                <a href="{{ url_for('reports.list_reports') }}" class="btn btn-primary">View Reports</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-people"></i> Users</h5>
+                <p class="card-text">View and manage user accounts and permissions.</p>
+                <a href="{{ url_for('users.list_users') }}" class="btn btn-primary">View Users</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-gear"></i> Your Profile</h5>
+                <p class="card-text">View and update your profile information.</p>
+                <a href="{{ url_for('users.view_user', username=user.username) }}" class="btn btn-primary">View Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <h3>Your Roles</h3>
+        <div class="d-flex gap-2">
+            {% for role in user.roles %}
+            <span class="badge bg-secondary">{{ role.role_name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
