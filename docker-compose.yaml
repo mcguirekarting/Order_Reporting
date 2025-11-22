@@ -2,10 +2,10 @@ version: '3.8'
 
 x-airflow-common:
   &airflow-common
-  image: apache/airflow:2.7.2-python3.9
+  image: apache/airflow:2.10.4-python3.9
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: sqlite:////airflow/airflow.db
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -46,13 +46,32 @@ x-airflow-common:
     - ./plugins:/opt/airflow/plugins
     - ./utils:/opt/airflow/utils
     - ./tmp:/tmp
-    - ./airflow:/airflow
   depends_on:
+    - postgres
     - mongodb
     - oracle-db
   
 services:
-  # Oracle Database - FIXED ENVIRONMENT SECTION
+  # PostgreSQL Database for Airflow
+  postgres:
+    image: postgres:13
+    container_name: postgres-airflow
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # Oracle Database
   oracle-db:
     image: gvenzl/oracle-xe:21-slim
     container_name: oracle-reports-db
@@ -98,8 +117,7 @@ services:
     command: >
       -c "
         pip install pymongo pandas matplotlib reportlab requests oracledb bcrypt
-        pip install 'apache-airflow-providers-openlineage>=1.8.0' --no-deps
-        mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/plugins /opt/airflow/config /opt/airflow/utils /tmp /airflow
+        mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/plugins /opt/airflow/config /opt/airflow/utils /tmp
         airflow db init
         airflow db upgrade
         if ! airflow users list | grep -q 'admin'; then
@@ -107,6 +125,9 @@ services:
         fi
         exit 0 
       "
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: on-failure
 
   # Airflow Webserver
@@ -120,7 +141,6 @@ services:
     command: >
       bash -c "
         pip install pymongo pandas matplotlib reportlab requests oracledb
-        pip install 'apache-airflow-providers-openlineage>=1.8.0' --no-deps
         exec airflow webserver
       "
     ports:
@@ -143,7 +163,6 @@ services:
     command: >
       bash -c "
         pip install pymongo pandas matplotlib reportlab requests oracledb
-        pip install 'apache-airflow-providers-openlineage>=1.8.0' --no-deps
         exec airflow scheduler
       "
     healthcheck:
@@ -169,6 +188,8 @@ services:
       - mongodb
 
 volumes:
+  postgres_data:
+    driver: local
   mongodb_data:
     driver: local
   oracle_data:
