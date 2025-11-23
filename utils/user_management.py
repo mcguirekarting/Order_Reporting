@@ -11,7 +11,7 @@ from typing import Optional, Dict, List, Any
 import bcrypt
 import oracledb
 
-from utils.oracle_db_utils import get_db_connection
+from utils.oracle_db_utils import get_db_connection 
 
 logger = logging.getLogger("user_management")
 
@@ -99,8 +99,8 @@ def validate_email(email: str) -> bool:
     return bool(re.match(pattern, email))
 
 
-def create_user(username: str, email: str, password: str, first_name: str = None,
-                last_name: str = None, roles: List[str] = None, created_by: str = 'SYSTEM',
+def create_user(username: str, email: str, password: str, first_name: Optional[str] = None,
+                last_name: Optional[str] = None, roles: Optional[List[str]] = None, created_by: str = 'SYSTEM',
                 must_change_password: bool = False) -> Optional[int]:
     """
     Create a new user with hashed password
@@ -160,6 +160,7 @@ def create_user(username: str, email: str, password: str, first_name: str = None
             return None
         
         # Insert the user
+        user_id_var = cursor.var(oracledb.NUMBER)
         cursor.execute("""
             INSERT INTO users 
                 (username, email, password_hash, first_name, last_name, 
@@ -171,9 +172,9 @@ def create_user(username: str, email: str, password: str, first_name: str = None
         """, username=username, email=email, password_hash=password_hash,
              first_name=first_name, last_name=last_name,
              must_change_password=1 if must_change_password else 0,
-             created_by=created_by, user_id=cursor.var(oracledb.NUMBER))
+             created_by=created_by, user_id=user_id_var)
         
-        user_id = int(cursor.getvalue(0))
+        user_id = int(user_id_var.getvalue())
         
         # Assign roles if provided
         if roles:
@@ -211,8 +212,8 @@ def create_user(username: str, email: str, password: str, first_name: str = None
             connection.close()
 
 
-def authenticate_user(username: str, password: str, ip_address: str = None,
-                     user_agent: str = None) -> Optional[Dict[str, Any]]:
+def authenticate_user(username: str, password: str, ip_address: Optional[str] = None,
+                     user_agent: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
     Authenticate a user with username and password
     
@@ -600,10 +601,10 @@ def assign_role(user_id: int, role_id: str, assigned_by: str = 'SYSTEM') -> bool
             connection.close()
 
 
-def log_user_activity(user_id: int = None, username: str = None, activity_type: str = None,
-                     activity_description: str = None, ip_address: str = None,
-                     user_agent: str = None, success: bool = True, 
-                     error_message: str = None):
+def log_user_activity(user_id: Optional[int] = None, username: Optional[str] = None, activity_type: Optional[str] = None,
+                     activity_description: Optional[str] = None, ip_address: Optional[str] = None,
+                     user_agent: Optional[str] = None, success: bool = True, 
+                     error_message: Optional[str] = None):
     """
     Log user activity
     
@@ -646,7 +647,7 @@ def log_user_activity(user_id: int = None, username: str = None, activity_type: 
             connection.close()
 
 
-def get_user_info(user_id: int = None, username: str = None) -> Optional[Dict[str, Any]]:
+def get_user_info(user_id: Optional[int] = None, username: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
     Get detailed user information
     
@@ -880,93 +881,9 @@ def get_user_roles() -> List[Dict[str, str]]:
             connection.close()
 
 
-def reset_password(username: str = None, user_id: int = None, new_password: str = None, 
-                  changed_by: str = 'SYSTEM', must_change_password: bool = True) -> bool:
-    """
-    Reset a user's password by username or user_id (admin function)
-    
-    Args:
-        username: Username (optional if user_id is provided)
-        user_id: User ID (optional if username is provided)
-        new_password: New password
-        changed_by: Username of the person resetting the password
-        must_change_password: Whether user must change password on next login
-        
-    Returns:
-        True if successful, False otherwise
-    """
-    connection = None
-    try:
-        if not new_password:
-            logger.error("New password is required")
-            return False
-        
-        is_valid, error_msg = validate_password_strength(new_password)
-        if not is_valid:
-            logger.error(f"Password validation failed: {error_msg}")
-            return False
-        
-        connection = get_db_connection()
-        cursor = connection.cursor()
-        
-        if username:
-            cursor.execute("SELECT user_id, username FROM users WHERE username = :username", 
-                          username=username)
-        elif user_id:
-            cursor.execute("SELECT user_id, username FROM users WHERE user_id = :user_id", 
-                          user_id=user_id)
-        else:
-            logger.error("Either username or user_id must be provided")
-            return False
-        
-        row = cursor.fetchone()
-        if not row:
-            logger.error(f"User not found")
-            return False
-        
-        resolved_user_id, resolved_username = row
-        
-        new_hash = hash_password(new_password)
-        
-        cursor.execute("""
-            UPDATE users
-            SET password_hash = :new_hash,
-                password_changed_date = SYSTIMESTAMP,
-                must_change_password = :must_change,
-                failed_login_attempts = 0,
-                is_locked = 0,
-                modified_date = SYSTIMESTAMP,
-                modified_by = :changed_by
-            WHERE user_id = :user_id
-        """, new_hash=new_hash, user_id=resolved_user_id, changed_by=changed_by,
-             must_change=1 if must_change_password else 0)
-        
-        connection.commit()
-        cursor.close()
-        
-        log_user_activity(
-            user_id=resolved_user_id,
-            username=resolved_username,
-            activity_type='PASSWORD_RESET',
-            activity_description=f'Password reset by {changed_by}',
-            success=True
-        )
-        
-        logger.info(f"Password reset successfully for user: {resolved_username} by {changed_by}")
-        return True
-        
-    except oracledb.Error as error:
-        logger.error(f"Database error resetting password: {error}")
-        if connection:
-            connection.rollback()
-        return False
-    finally:
-        if connection:
-            connection.close()
 
-
-def update_user(user_id: int, email: str = None, first_name: str = None,
-               last_name: str = None, is_active: bool = None, 
+def update_user(user_id: int, email: Optional[str] = None, first_name: Optional[str] = None,
+               last_name: Optional[str] = None, is_active: Optional[bool] = None, 
                modified_by: str = 'SYSTEM') -> bool:
     """
     Update user information

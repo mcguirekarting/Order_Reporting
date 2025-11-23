@@ -29,6 +29,8 @@ GRANT CREATE TABLE TO report_user;
 GRANT UNLIMITED TABLESPACE TO report_user;
 
 
+
+
 -- =====================================================
 -- STEP 2: CONNECT AS report_user TO CREATE TABLES
 -- =====================================================
@@ -107,6 +109,7 @@ CREATE TABLE user_activity_log (
         REFERENCES users(user_id) ON DELETE SET NULL,
     CONSTRAINT chk_activity_success CHECK (success IN (0, 1))
 );
+
 
 -- =====================================================
 -- SECTION 2: REPORT CONFIGURATION TABLES
@@ -255,10 +258,23 @@ VALUES ('report_admin', 'admin@localhost',
         '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5iqy8lHiCfSki', 'Admin',
         'Report', 'LastNameTest', 0, 'SYSTEM');
 
+--Insert Admin user
+-- This is the bcrypt hash for 'Admin123!'
+INSERT INTO users (username, email, password_hash, role_id, first_name, last_name, must_change_password, created_by)
+ VALUES ('Admin', 'admin@gmail.com', 
+        '$2b$12$kZ.JqQbR9pW6RWQH0f2Gb.OhyB1V8KQH0f2Gb9pW6RWQH0f2Gb', 'Admin', 
+        'Admin','User', 0, 'SYSTEM');
+
+
 -- Assign ADMIN role to report_admin user
 INSERT INTO user_roles (user_id, role_id, assigned_by)
 SELECT user_id, 'ADMIN', 'SYSTEM'
 FROM users WHERE username = 'report_admin';
+
+-- Assign ADMIN role to Admin user
+INSERT INTO user_roles (user_id, role_id, assigned_by)
+SELECT user_id, 'ADMIN', 'SYSTEM'
+FROM users WHERE username = 'Admin';
 
 -- Insert initial system configurations
 INSERT INTO system_config (config_key, config_value, config_type, description, modified_by)

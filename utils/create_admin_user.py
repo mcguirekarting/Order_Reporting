@@ -12,7 +12,7 @@ import getpass
 # Add utils directory to path
 sys.path.append('/opt/airflow')
 
-from utils.user_management import create_user, get_user_info
+from user_management import create_user, get_user_info
 
 
 def create_admin_user():
