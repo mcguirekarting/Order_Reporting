@@ -7,13 +7,17 @@
 -- STEP 1: CREATE DATABASE USER (as SYSTEM)
 -- =====================================================
 
--- Create the app user in the PDB
-CREATE USER report_user IDENTIFIED BY report_password
-  DEFAULT TABLESPACE USERS
-  TEMPORARY TABLESPACE TEMP
-  QUOTA UNLIMITED ON USERS;
+-- First, grant privileges to the existing report_user
+ALTER SESSION SET CONTAINER=XEPDB1;
 
--- Grant necessary privileges
+create user report_user identified by report_password
+    default tablespace USERS
+    temporary tablespace TEMP
+    quota unlimited on USERS;   
+
+-- Grant CREATE SESSION and other privileges
+ALTER USER report_user DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
+GRANT CREATE SESSION TO report_user;
 GRANT CONNECT, RESOURCE TO report_user;
 GRANT CREATE VIEW TO report_user;
 GRANT CREATE SEQUENCE TO report_user;
@@ -24,8 +28,6 @@ GRANT CREATE TYPE TO report_user;
 GRANT CREATE TABLE TO report_user;
 GRANT UNLIMITED TABLESPACE TO report_user;
 
-GRANT CONNECT, RESOURCE TO system,
-
 
 -- =====================================================
 -- STEP 2: CONNECT AS report_user TO CREATE TABLES
@@ -33,6 +35,7 @@ GRANT CONNECT, RESOURCE TO system,
 
 CONNECT report_user/report_password@XEPDB1
 
+COMMIT;
 -- =====================================================
 -- SECTION 1: USER AUTHENTICATION TABLES
 -- =====================================================
