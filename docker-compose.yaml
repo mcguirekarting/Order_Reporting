@@ -76,10 +76,11 @@ services:
     image: gvenzl/oracle-xe:21-slim
     container_name: oracle-reports-db
     environment:
+      ORACLE_USER: ${ORACLE_USER:-OracleDBA}
       ORACLE_PASSWORD: ${ORACLE_PASSWORD:-password123}
       ORACLE_DATABASE: ${ORACLE_DATABASE:-REPORTS}
       APP_USER: ${ORACLE_USER:-Admin}
-      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-password123}
+      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-Admin123!}
     ports:
       - "1521:1521"
       - "5500:5500"

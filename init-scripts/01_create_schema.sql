@@ -24,6 +24,9 @@ GRANT CREATE TYPE TO report_user;
 GRANT CREATE TABLE TO report_user;
 GRANT UNLIMITED TABLESPACE TO report_user;
 
+GRANT CONNECT, RESOURCE TO system,
+
+
 -- =====================================================
 -- STEP 2: CONNECT AS report_user TO CREATE TABLES
 -- =====================================================
