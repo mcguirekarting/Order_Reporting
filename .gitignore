@@ -85,7 +85,7 @@ ipython_config.py
 celerybeat-schedule
 
 #Local 
-.local/state/
+.local/state/replit/agent/
 .DS_Store
 Thumbs.db
 local/
