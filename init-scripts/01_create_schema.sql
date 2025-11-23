@@ -58,6 +58,7 @@ CREATE TABLE users (
     user_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     username VARCHAR2(100) NOT NULL UNIQUE,
     email VARCHAR2(200) NOT NULL UNIQUE,
+    role_id VARCHAR2(50),
     password_hash VARCHAR2(255) NOT NULL,
     first_name VARCHAR2(100),
     last_name VARCHAR2(100),
@@ -249,10 +250,10 @@ VALUES ('REPORT_EXECUTOR', 'Report Executor', 'Can execute reports but not modif
 -- Username: report_admin
 -- Password: Admin123! (bcrypt hash below)
 -- This password should be changed on first login
-INSERT INTO users (username, email, password_hash, first_name, last_name, must_change_password, created_by)
+INSERT INTO users (username, email, password_hash, role_id, first_name, last_name, must_change_password, created_by)
 VALUES ('report_admin', 'admin@localhost', 
-        '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5iqy8lHiCfSki',
-        'Report', 'Administrator', 0, 'SYSTEM');
+        '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5iqy8lHiCfSki', 'Admin',
+        'Report', 'LastNameTest', 0, 'SYSTEM');
 
 -- Assign ADMIN role to report_admin user
 INSERT INTO user_roles (user_id, role_id, assigned_by)
