@@ -46,6 +46,8 @@ x-airflow-common:
     - ./plugins:/opt/airflow/plugins
     - ./utils:/opt/airflow/utils
     - ./tmp:/tmp
+    - ./dashboard:/opt/airflow/dashboard
+  
   depends_on:
     - postgres
     - mongodb
@@ -133,7 +135,18 @@ services:
 
   # Airflow Webserver
   airflow-webserver:
-    <<: *airflow-common
+    image: apache/airflow:2.10.4-python3.9
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./config:/opt/airflow/config
+      - ./plugins:/opt/airflow/plugins
+      - ./utils:/opt/airflow/utils
+      - ./dashboard:/opt/airflow/dashboard
+      - ./Order_Reporting:/opt/airflow
+      - ./Order_Reporting:/opt/airflow/utils
+    environment:
+      <<: *airflow-common
     container_name: airflow-webserver
     depends_on:
       - airflow-init
@@ -141,7 +154,7 @@ services:
       - oracle-db
     command: >
       bash -c "
-        pip install pymongo pandas matplotlib reportlab requests oracledb
+        pip install pymongo pandas matplotlib reportlab requests oracledb utils
         exec airflow webserver
       "
     ports:

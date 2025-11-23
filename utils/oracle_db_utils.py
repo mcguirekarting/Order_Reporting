@@ -29,7 +29,7 @@ def get_db_connection():
         db_service = os.environ.get("ORACLE_SERVICE", "ORCL")
         
         # Create DSN
-        dsn = oracledb.makedsn(db_host, int(db_port), service_name=db_service)
+        dsn = oracledb.makedsn(db_host, db_port, service_name=db_service)
         
         # Create connection
         connection = oracledb.connect(user=db_user, password=db_password, dsn=dsn)
@@ -164,7 +164,7 @@ def get_active_report_ids() -> List[str]:
 
 
 def start_report_execution(report_id: str, from_date: datetime, to_date: datetime,
-                          dag_run_id: Optional[str] = None) -> Optional[int]:
+                          dag_run_id: str = None) -> Optional[int]:
     """
     Log the start of a report execution
     
@@ -182,7 +182,6 @@ def start_report_execution(report_id: str, from_date: datetime, to_date: datetim
         connection = get_db_connection()
         cursor = connection.cursor()
         
-        exec_id_var = cursor.var(oracledb.NUMBER)
         cursor.execute("""
             INSERT INTO report_execution_history 
                 (report_id, execution_date, start_time, status, from_date, to_date, airflow_dag_run_id)
@@ -190,14 +189,14 @@ def start_report_execution(report_id: str, from_date: datetime, to_date: datetim
                 (:report_id, SYSTIMESTAMP, SYSTIMESTAMP, 'RUNNING', :from_date, :to_date, :dag_run_id)
             RETURNING execution_id INTO :exec_id
         """, report_id=report_id, from_date=from_date, to_date=to_date, 
-             dag_run_id=dag_run_id, exec_id=exec_id_var)
+             dag_run_id=dag_run_id, exec_id=cursor.var(oracledb.NUMBER))
         
-        execution_id = exec_id_var.getvalue()
+        execution_id = cursor.getvalue(0)
         connection.commit()
         cursor.close()
         
         logger.info(f"Started execution {execution_id} for report {report_id}")
-        return int(execution_id) if execution_id is not None else None
+        return int(execution_id)
         
     except oracledb.Error as error:
         logger.error(f"Database error starting execution: {error}")
@@ -209,9 +208,9 @@ def start_report_execution(report_id: str, from_date: datetime, to_date: datetim
             connection.close()
 
 
-def complete_report_execution(execution_id: int, status: str, records_processed: Optional[int] = None,
-                              error_message: Optional[str] = None, pdf_file_path: Optional[str] = None,
-                              mongodb_doc_id: Optional[str] = None):
+def complete_report_execution(execution_id: int, status: str, records_processed: int = None,
+                              error_message: str = None, pdf_file_path: str = None,
+                              mongodb_doc_id: str = None):
     """
     Mark a report execution as complete
     
@@ -257,7 +256,7 @@ def complete_report_execution(execution_id: int, status: str, records_processed:
 
 def cache_api_response(report_id: str, execution_id: int, from_date: datetime,
                       to_date: datetime, view_name: str, order_type: str,
-                      response_data: List[Dict[str, Any]], mongodb_doc_id: Optional[str] = None):
+                      response_data: List[Dict], mongodb_doc_id: str = None):
     """
     Cache an API response in the database
     
@@ -280,11 +279,7 @@ def cache_api_response(report_id: str, execution_id: int, from_date: datetime,
         response_json = json.dumps(response_data)
         
         # Get cache expiry from config (default 24 hours)
-        cache_value = get_system_config("cache_expiry_hours", "24")
-        try:
-            cache_hours = int(cache_value)
-        except (TypeError, ValueError):
-            cache_hours = 24
+        cache_hours = int(Variable.get("cache_expiry_hours", "24"))
         
         cursor.execute("""
             INSERT INTO api_response_cache 
@@ -315,8 +310,8 @@ def cache_api_response(report_id: str, execution_id: int, from_date: datetime,
 
 
 def log_email_delivery(execution_id: int, recipient_email: str, delivery_status: str,
-                       email_subject: Optional[str] = None, attachment_size: Optional[int] = None,
-                       error_message: Optional[str] = None):
+                       email_subject: str = None, attachment_size: int = None,
+                       error_message: str = None):
     """
     Log an email delivery attempt
     
@@ -358,9 +353,9 @@ def log_email_delivery(execution_id: int, recipient_email: str, delivery_status:
             connection.close()
 
 
-def log_error(report_id: Optional[str] = None, execution_id: Optional[int] = None, error_source: Optional[str] = None,
-              error_type: Optional[str] = None, error_message: Optional[str] = None, stack_trace: Optional[str] = None,
-              dag_id: Optional[str] = None, task_id: Optional[str] = None):
+def log_error(report_id: str = None, execution_id: int = None, error_source: str = None,
+              error_type: str = None, error_message: str = None, stack_trace: str = None,
+              dag_id: str = None, task_id: str = None):
     """
     Log an error to the centralized error log
     
@@ -404,7 +399,7 @@ def log_error(report_id: Optional[str] = None, execution_id: Optional[int] = Non
             connection.close()
 
 
-def get_system_config(config_key: str, default_value: Optional[str] = None) -> str:
+def get_system_config(config_key: str, default_value: str = None) -> str:
     """
     Get a system configuration value
     
@@ -433,18 +428,18 @@ def get_system_config(config_key: str, default_value: Optional[str] = None) -> s
             return row[0]
         else:
             logger.warning(f"Config key {config_key} not found, using default: {default_value}")
-            return default_value if default_value is not None else ""
+            return default_value
             
     except oracledb.Error as error:
         logger.error(f"Database error retrieving config: {error}")
-        return default_value if default_value is not None else ""
+        return default_value
     finally:
         if connection:
             connection.close()
 
 
 def set_system_config(config_key: str, config_value: str, config_type: str = 'STRING',
-                     description: Optional[str] = None, modified_by: str = 'SYSTEM'):
+                     description: str = None, modified_by: str = 'SYSTEM'):
     """
     Set a system configuration value
     
@@ -487,7 +482,7 @@ def set_system_config(config_key: str, config_value: str, config_type: str = 'ST
             connection.close()
 
 
-def get_execution_history(report_id: Optional[str] = None, days: int = 7) -> List[Dict[str, Any]]:
+def get_execution_history(report_id: str = None, days: int = 7) -> List[Dict[str, Any]]:
     """
     Get execution history for a report or all reports
     

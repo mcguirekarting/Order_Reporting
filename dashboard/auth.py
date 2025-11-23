@@ -7,7 +7,8 @@ from utils.user_management import authenticate_user
 
 logger = logging.getLogger(__name__)
 
-
+# Auth blueprint
+auth_blueprint = Blueprint("auth", __name__, url_prefix="/auth")
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
@@ -48,8 +49,8 @@ def login():
             flash('Username and password are required.', 'danger')
             return render_template('auth/login.html')
         
-        ip_address = request.remote_addr or ''
-        user_agent = request.headers.get('User-Agent') or ''
+        ip_address = request.remote_addr
+        user_agent = request.headers.get('User-Agent')
         
         user_data = authenticate_user(username, password, ip_address, user_agent)
         
