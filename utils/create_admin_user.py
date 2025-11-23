@@ -59,9 +59,9 @@ def create_admin_user():
     try:
         # Create the user with ADMIN role
         user_id = create_user(
-            username=username,
+            username='Admin',
             email=email,
-            password=password,
+            password='password123'
             first_name=first_name,
             last_name=last_name,
             roles=['ADMIN'],

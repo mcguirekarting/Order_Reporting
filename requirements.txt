@@ -1,0 +1,27 @@
+# Core Framework
+apache-airflow==2.7.2
+flask>=2.2.5
+flask-login>=0.6.3
+flask-wtf>=1.2.2
+
+# Database Clients
+pymongo>=4.15.4
+oracledb>=3.4.1
+psycopg2-binary>=2.9.11
+
+# Data Processing & Analysis
+pandas>=2.3.3
+matplotlib>=3.10.7
+
+# PDF Generation
+reportlab>=4.4.5
+
+# HTTP & API
+requests>=2.32.5
+
+# Security
+bcrypt>=5.0.0
+
+# Utilities
+pendulum<3.0.0
+werkzeug>=3.1.3

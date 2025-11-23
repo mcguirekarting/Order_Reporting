@@ -33,8 +33,8 @@ x-airflow-common:
     MONGODB_COLLECTION: api_responses
     
     # Oracle Database connection
-    ORACLE_USER: ${ORACLE_USER:-report_user}
-    ORACLE_PASSWORD: ${ORACLE_PASSWORD:-report_password}
+    ORACLE_USER: ${ORACLE_USER:-OracleDBA}
+    ORACLE_PASSWORD: ${ORACLE_PASSWORD:-password123}
     ORACLE_HOST: oracle-db
     ORACLE_PORT: 1521
     ORACLE_SERVICE: ${ORACLE_SERVICE:-XEPDB1}
@@ -76,10 +76,10 @@ services:
     image: gvenzl/oracle-xe:21-slim
     container_name: oracle-reports-db
     environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-report_password}
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-password123}
       ORACLE_DATABASE: ${ORACLE_DATABASE:-REPORTS}
-      APP_USER: ${ORACLE_USER:-report_user}
-      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-report_password}
+      APP_USER: ${ORACLE_USER:-Admin}
+      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-password123}
     ports:
       - "1521:1521"
       - "5500:5500"
