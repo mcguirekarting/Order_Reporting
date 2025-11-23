@@ -90,3 +90,5 @@ celerybeat-schedule
 Thumbs.db
 local/
 replit/
+*.bin
+*.json
