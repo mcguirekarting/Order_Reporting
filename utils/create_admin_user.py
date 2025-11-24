@@ -9,6 +9,11 @@ import sys
 import os
 import getpass
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()  
+# This will load your .env file
+
 # Add utils directory to path
 sys.path.append('/opt/airflow')
 

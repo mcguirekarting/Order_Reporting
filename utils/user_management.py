@@ -987,7 +987,7 @@ def update_user(user_id: int, email: str = None, first_name: str = None,
         connection = get_db_connection()
         cursor = connection.cursor()
         
-        cursor.execute("SELECT username FROM users WHERE user_id = :user_id", 
+        cursor.execute("SELECT USERNAME FROM USERS WHERE USERNAME = :USERNAME",
                       user_id=user_id)
         row = cursor.fetchone()
         if not row:

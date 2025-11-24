@@ -16,7 +16,12 @@ create user report_user identified by report_password
     quota unlimited on USERS;   
 
 -- Grant CREATE SESSION and other privileges
+GRANT SELECT, INSERT, UPDATE, DELETE ON REPORT_USER.USERS TO OracleDBA
+
+Grant User TableSpace Users to System;
+
 ALTER USER report_user DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
+ALTER USER System DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYS.DUAL TO report_user;
 GRANT SELECT, INSERT, UPDATE, DELETE ON REPORT_USER.USERS TO report_user;
 GRANT CREATE SESSION TO report_user;
