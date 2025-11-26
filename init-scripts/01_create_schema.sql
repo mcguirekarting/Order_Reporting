@@ -10,15 +10,43 @@
 -- First, grant privileges to the existing report_user
 ALTER SESSION SET CONTAINER=XEPDB1;
 
-create user report_user identified by report_password
+create user report_user identified by password123!
     default tablespace USERS
     temporary tablespace TEMP
     quota unlimited on USERS;   
 
 -- Grant CREATE SESSION and other privileges
-GRANT SELECT, INSERT, UPDATE, DELETE ON REPORT_USER.USERS TO OracleDBA
+GRANT SELECT, INSERT, UPDATE, DELETE ON REPORT_USER.users TO report_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON REPORT_USER.users TO System;
 
-Grant User TableSpace Users to System;
+GRANT SELECT ON REPORT_USER.USERS.users TO System;
+
+
+-- Create System user permissions
+Grant Unlimited Tablespace to System;
+grant Connect to System;
+grant Resource to System;
+grant Create Any Table to System;
+grant Create Any View to System;
+grant Create Any Procedure to System;
+grant Create Any Sequence to System;
+grant Create Any Synonym to System;
+grant Create Any Trigger to System;
+grant Create Any Type to System;
+grant Create Any Index to System;
+grant Drop Any Table to System;
+grant Alter Any Table to System;
+grant Execute Any Procedure to System;
+grant Flashback Any Table to System;
+grant Select Any Dictionary to System;
+grant Drop Any Index to System;
+grant Alter Any Index to System;
+grant Create Job to System;
+grant Create Any Job to System;
+grant Debug Connect Session to System;
+grant Debug Any Procedure to System;
+
+
 
 ALTER USER report_user DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
 ALTER USER System DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS;
@@ -67,7 +95,7 @@ COMMIT;
 -- STEP 2: CONNECT AS report_user TO CREATE TABLES
 -- =====================================================
 
-CONNECT report_user/report_password@XEPDB1
+CONNECT report_user/password123!@XEPDB1
 
 COMMIT;
 -- =====================================================

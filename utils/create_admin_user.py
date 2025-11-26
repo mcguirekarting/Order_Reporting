@@ -7,17 +7,13 @@ Run this after setting up the database schema
 
 import sys
 import os
-import getpass
-
-# Load environment variables from .env file
-from dotenv import load_dotenv
-load_dotenv()  
-# This will load your .env file
+import getpass 
+from utils.user_management import create_user, get_user_info
 
 # Add utils directory to path
 sys.path.append('/opt/airflow')
 
-from utils.user_management import create_user, get_user_info
+
 
 
 def create_admin_user():

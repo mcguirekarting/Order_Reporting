@@ -11,7 +11,7 @@ from typing import Optional, Dict, List, Any
 import bcrypt
 import oracledb
 
-from utils.oracle_db_utils import get_db_connection
+from utils.oracle_db_utils import get_oracle_connection as get_db_connection
 
 logger = logging.getLogger("user_management")
 
@@ -99,8 +99,8 @@ def validate_email(email: str) -> bool:
     return bool(re.match(pattern, email))
 
 
-def create_user(username: str, email: str, password: str, first_name: str = None,
-                last_name: str = None, roles: List[str] = None, created_by: str = 'SYSTEM',
+def create_user(username: str, email: str, password: str, first_name: str,
+                last_name: str, roles: List[str], created_by: str = 'SYSTEM',
                 must_change_password: bool = False) -> Optional[int]:
     """
     Create a new user with hashed password
@@ -987,7 +987,7 @@ def update_user(user_id: int, email: str = None, first_name: str = None,
         connection = get_db_connection()
         cursor = connection.cursor()
         
-        cursor.execute("SELECT USERNAME FROM USERS WHERE USERNAME = :USERNAME",
+        cursor.execute("SELECT username FROM users WHERE user_id = :user_id", 
                       user_id=user_id)
         row = cursor.fetchone()
         if not row:

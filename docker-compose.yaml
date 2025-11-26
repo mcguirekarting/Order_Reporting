@@ -33,7 +33,7 @@ x-airflow-common:
     MONGODB_COLLECTION: api_responses
     
     # Oracle Database connection
-    ORACLE_USER: ${ORACLE_USER:-OracleDBA}
+    ORACLE_USER: ${ORACLE_USER:-Administrator}
     ORACLE_PASSWORD: ${ORACLE_PASSWORD:-password123}
     ORACLE_HOST: oracle-db
     ORACLE_PORT: 1521
@@ -78,11 +78,11 @@ services:
     image: gvenzl/oracle-xe:21-slim
     container_name: oracle-reports-db
     environment:
-      ORACLE_USER: ${ORACLE_USER:-OracleDBA}
+      ORACLE_USER: ${ORACLE_USER:-System}
       ORACLE_PASSWORD: ${ORACLE_PASSWORD:-password123}
       ORACLE_DATABASE: ${ORACLE_DATABASE:-REPORTS}
-      APP_USER: ${ORACLE_USER:-Admin}
-      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-Admin123!}
+      APP_USER: ${ORACLE_USER:-Administrator}
+      APP_USER_PASSWORD: ${ORACLE_PASSWORD:-password123}
     ports:
       - "1521:1521"
       - "5500:5500"
@@ -143,7 +143,7 @@ services:
       - oracle-db
     command: >
       bash -c "
-        pip install pymongo pandas matplotlib reportlab requests oracledb
+        pip install pymongo pandas matplotlib reportlab requests oracledb utils user_management
         pip install 'apache-airflow-providers-openlineage>=1.8.0' --no-deps
         exec airflow webserver
       "

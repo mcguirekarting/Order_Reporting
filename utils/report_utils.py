@@ -1,3 +1,8 @@
+import logging
+import requests
+from airflow.models.variable import Variable
+from typing import Any, Dict, List, Optional
+
 def query_order_api(from_date, to_date, report_config=None):
     """
     Query the order search API with configurable parameters and log response to MongoDB
@@ -16,7 +21,7 @@ def query_order_api(from_date, to_date, report_config=None):
         from utils.mongo_utils import log_api_response
         mongo_available = True
     except ImportError:
-        logger.warning("MongoDB utilities not available. API responses will not be logged.")
+        logging.warning("MongoDB utilities not available. API responses will not be logged.")
         mongo_available = False
     
     # Get API configuration
